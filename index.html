@@ -1,0 +1,598 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Admissions Bot Interface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <style>
+        .slide-in {
+            animation: slide-in 0.5s forwards;
+        }
+
+        .slide-out {
+            animation: slide-out 0.5s forwards;
+        }
+
+        @keyframes slide-in {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slide-out {
+            from {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+        }
+
+        .peek {
+            animation: peek 0.5s forwards;
+        }
+
+        @keyframes peek {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            50% {
+                transform: rotate(15deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+
+        .peek-hover:hover img {
+            animation: peek 0.5s forwards;
+        }
+
+        .highlight {
+            position: relative;
+            display: inline-block;
+        }
+
+        .highlight::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            transform: scaleX(0);
+            height: 0.2em;
+            bottom: 0;
+            left: 0;
+            background-color: #d4f5d4;
+            /* Very light pastel green */
+            transform-origin: bottom right;
+            transition: transform 0.25s ease-out;
+        }
+
+        .highlight:hover::after {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+
+        .highlight:hover {
+            background-color: #d4f5d4;
+            /* Very light pastel green */
+            transition: background-color 0.25s ease-out;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            /* Position the tooltip above the text */
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .slider-button {
+            position: relative;
+            width: 120px;
+            height: 30px;
+            background-color: #d3d3d3;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .slider-button:hover {
+            background-color: #b3b3b3;
+        }
+
+        .slider-button::before {
+            content: 'Speed';
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #fff;
+            font-size: 12px;
+        }
+
+        .slider-button::after {
+            content: 'Quality';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #fff;
+            font-size: 12px;
+        }
+
+        .slider-thumb {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            background-color: #4CAF50;
+            border-radius: 15px;
+            transition: left 0.3s;
+        }
+
+        .slider-thumb:hover {
+            box-shadow: 0 0 10px #4CAF50;
+        }
+
+        .slider-thumb.speed {
+            left: 0;
+        }
+
+        .slider-thumb.quality {
+            left: 50%;
+        }
+
+        .dark-mode {
+            background-color: #1a202c;
+            color: #a0aec0;
+        }
+
+        .dark-mode .bg-gray-100 {
+            background-color: #2d3748;
+        }
+
+        .dark-mode .bg-white {
+            background-color: #2d3748;
+        }
+
+        .dark-mode .text-gray-700 {
+            color: #a0aec0;
+        }
+
+        .dark-mode .text-gray-500 {
+            color: #718096;
+        }
+
+        .dark-mode .bg-gray-100 {
+            background-color: #4a5568;
+        }
+
+        .dark-mode .bg-green-100 {
+            background-color: #2f855a;
+        }
+
+        .dark-mode .text-green-600 {
+            color: #68d391;
+        }
+
+        .dark-mode .text-white {
+            color: #e2e8f0;
+        }
+
+        .dark-mode .bg-green-600 {
+            background-color: #2f855a;
+        }
+
+        .dark-mode .bg-green-800 {
+            background-color: #276749;
+        }
+
+        .dark-mode .tooltip .tooltiptext {
+            background-color: #4a5568;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border: 1px solid #ccc;
+            z-index: 10;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .search-results.dark-mode {
+            background-color: #2d3748;
+            border-color: #4a5568;
+        }
+
+        .search-results li {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .search-results li:hover {
+            background-color: #f0f0f0;
+        }
+
+        .search-results.dark-mode li:hover {
+            background-color: #4a5568;
+        }
+
+        .cookie-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 90%;
+            width: 400px;
+        }
+
+        .cookie-notification.dark-mode {
+            background-color: #2d3748;
+            border-color: #4a5568;
+            color: #a0aec0;
+        }
+
+        .cookie-notification button {
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .cookie-notification button:hover {
+            background-color: #45a049;
+        }
+
+        .chat-box {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .chat-box::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-box::-webkit-scrollbar-thumb {
+            background-color: #4CAF50;
+            border-radius: 4px;
+        }
+
+        .chat-box::-webkit-scrollbar-thumb:hover {
+            background-color: #45a049;
+        }
+    </style>
+    <script>
+        function handleInput(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const message = input.value.trim();
+            if (message) {
+                const chatBox = document.getElementById('chat-box');
+                const userMessage = document.createElement('div');
+                userMessage.classList.add('bg-gray-100', 'rounded-lg', 'p-4', 'mb-4', 'flex', 'items-start', 'space-x-4');
+                userMessage.innerHTML = `
+                    <div class="text-green-600">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <p class="text-gray-700">${message}</p>
+                    </div>
+                `;
+                chatBox.appendChild(userMessage);
+                input.value = '';
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                // 发送请求到llama-server
+                try {
+                    const data = {
+                        prompt: message,
+                        n_predict: 128,  // 生成的最大token数，可调整
+                        temperature: 0.7  // 控制生成随机性，可调整
+                    };
+
+                    const response = await fetch('http://127.0.0.1:5000/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('服务器响应错误');
+                    }
+
+                    const result = await response.json();
+                    const aiReply = result.content || '无回复内容';
+
+                    // 显示AI回复
+                    const aiMessage = document.createElement('div');
+                    aiMessage.classList.add('bg-white', 'rounded-lg', 'shadow', 'p-4', 'mb-4', 'flex', 'items-start', 'space-x-4');
+                    aiMessage.innerHTML = `
+                        <div class="text-green-600">
+                            <i class="fas fa-dragon"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-700">${aiReply}</p>
+                        </div>
+                    `;
+                    chatBox.appendChild(aiMessage);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                } catch (error) {
+                    console.error('错误:', error);
+                    const errorMessage = document.createElement('div');
+                    errorMessage.classList.add('bg-white', 'rounded-lg', 'shadow', 'p-4', 'mb-4', 'flex', 'items-start', 'space-x-4');
+                    errorMessage.innerHTML = `
+                        <div class="text-green-600">
+                            <i class="fas fa-dragon"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-700">发生错误: ${error.message}</p>
+                        </div>
+                    `;
+                    chatBox.appendChild(errorMessage);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+            }
+        }
+
+        function toggleQnABox() {
+            const qnaBox = document.getElementById('qna-box');
+            if (qnaBox.classList.contains('hidden')) {
+                qnaBox.classList.remove('hidden', 'slide-out');
+                qnaBox.classList.add('slide-in');
+            } else {
+                qnaBox.classList.remove('slide-in');
+                qnaBox.classList.add('slide-out');
+                setTimeout(() => {
+                    qnaBox.classList.add('hidden');
+                }, 500);
+            }
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
+            const dateTimeString = now.toLocaleDateString('en-US', options);
+            document.getElementById('date-time').innerText = dateTimeString;
+        }
+
+        function toggleSlider() {
+            const sliderThumb = document.getElementById('slider-thumb');
+            if (sliderThumb.classList.contains('speed')) {
+                sliderThumb.classList.remove('speed');
+                sliderThumb.classList.add('quality');
+            } else {
+                sliderThumb.classList.remove('quality');
+                sliderThumb.classList.add('speed');
+            }
+        }
+
+        function toggleDarkMode() {
+            const qnaBox = document.getElementById('qna-box');
+            qnaBox.classList.toggle('dark-mode');
+        }
+
+        function searchQuestions(event) {
+            const query = event.target.value.toLowerCase();
+            const results = document.getElementById('search-results');
+            results.innerHTML = '';
+
+            if (query) {
+                const questions = [
+                    'What are the essential components included in the IB curriculum at CIS?',
+                    'How does CIS ensure consistency in IB teaching methodologies across different grade levels?',
+                    'What criteria are used to decide whether a new subject or program should be added to the IB curriculum at CIS?',
+                    'How does CIS handle curriculum updates and changes within the IB framework?'
+                ];
+
+                const filteredQuestions = questions.filter(q => q.toLowerCase().includes(query));
+                filteredQuestions.forEach(q => {
+                    const li = document.createElement('li');
+                    li.textContent = q;
+                    li.onclick = () => {
+                        event.target.value = q;
+                        results.innerHTML = '';
+                    };
+                    results.appendChild(li);
+                });
+            }
+        }
+
+        function acceptCookies() {
+            document.getElementById('cookie-notification').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            updateDateTime();
+        });
+    </script>
+</head>
+
+<body class="bg-gray-100 flex flex-col justify-center items-center min-h-screen">
+    <div class="hidden bg-white shadow-lg rounded-lg w-full max-w-3xl p-6 relative" id="qna-box">
+        <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center">
+                    <i class="fas fa-dragon text-white"></i>
+                </div>
+                <span class="text-lg font-semibold">
+                    Dragon AI
+                </span>
+                <span class="text-sm text-gray-500 bg-gray-200 px-2 py-1 rounded">
+                    Admissions Bot Beta
+                </span>
+            </div>
+            <button class="text-green-600" onclick="toggleDarkMode()">
+                Toggle Dark Mode
+            </button>
+        </div>
+        <div class="mb-4">
+            <p class="text-gray-500" id="date-time">
+            </p>
+        </div>
+        <div class="chat-box" id="chat-box">
+            <div class="bg-gray-100 rounded-lg p-4 mb-4">
+                <p class="text-gray-700">
+                    What is Cebu International School and What is IB?
+                </p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4 mb-4 flex items-start space-x-4">
+                <div class="text-green-600">
+                    <i class="fas fa-dragon"></i>
+                </div>
+                <div>
+                    <p class="text-gray-700 mb-2">
+                        Cebu International School (CIS) follows the International Baccalaureate (IB) framework to
+                        provide a rigorous and holistic education. At its core, the IB program at CIS is designed to
+                        develop inquiring, knowledgeable, and caring students who are prepared for global challenges
+                        through a well-rounded curriculum and inquiry-based learning.
+                    </p>
+                    <ul class="space-y-2">
+                        <li class="flex items-center space-x-2">
+                            <i class="fas fa-chevron-right text-gray-500"></i>
+                            <span class="text-gray-700">
+                                What are the essential components included in the IB curriculum at CIS?
+                            </span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i class="fas fa-chevron-right text-gray-500"></i>
+                            <span class="text-gray-700">
+                                How does CIS ensure consistency in IB teaching methodologies across different grade
+                                levels?
+                            </span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i class="fas fa-chevron-right text-gray-500"></i>
+                            <span class="text-gray-700">
+                                What criteria are used to decide whether a new subject or program should be added to the
+                                IB curriculum at CIS?
+                            </span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i class="fas fa-chevron-right text-gray-500"></i>
+                            <span class="text-gray-700">
+                                How does CIS handle curriculum updates and changes within the IB framework?
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="bg-gray-100 rounded-lg p-4 flex items-center space-x-2 mb-4 relative">
+            <input class="flex-grow bg-transparent outline-none" id="user-input" oninput="searchQuestions(event)"
+                onkeydown="handleInput(event)" placeholder="Ask a question about this answer" type="text" />
+            <button class="bg-green-600 text-white rounded-full p-3" onclick="sendMessage()">
+                <i class="fas fa-arrow-up text-sm"></i>
+            </button>
+            <ul class="search-results" id="search-results">
+            </ul>
+        </div>
+        <div class="slider-container">
+            <div class="slider-button" onclick="toggleSlider()">
+                <div class="slider-thumb speed" id="slider-thumb"></div>
+            </div>
+        </div>
+        <div class="hidden bg-white rounded-lg shadow p-4 mt-4" id="suggestion-box">
+            <p class="text-gray-700">
+                Suggestions:
+            </p>
+            <ul class="list-disc list-inside">
+                <li class="text-gray-700">
+                    Use consistent naming conventions.
+                </li>
+                <li class="text-gray-700">
+                    Ensure components are reusable and modular.
+                </li>
+                <li class="text-gray-700">
+                    Document all components and their usage.
+                </li>
+            </ul>
+        </div>
+        <div class="hidden bg-white rounded-lg shadow p-4 mt-4" id="answer-box">
+            <p class="text-gray-700"></p>
+        </div>
+        <div class="text-xs text-gray-500 mt-4">
+            This was developed by Rishabh K. H. and You Wu.
+        </div>
+    </div>
+    <div class="tooltip fixed bottom-4 right-4">
+        <button class="bg-green-600 text-white rounded-full p-4 shadow-lg peek-hover" onclick="toggleQnABox()">
+            <div class="bg-green-800 rounded-full p-2 flex items-center justify-center">
+                <i class="fas fa-dragon text-white"></i>
+            </div>
+        </button>
+        <span class="tooltiptext">Talk to Dragon AI</span>
+    </div>
+    <div class="cookie-notification" id="cookie-notification">
+        <p>
+            We use cookies to improve your experience. By using our site, you agree to our use of cookies.
+        </p>
+        <button onclick="acceptCookies()">
+            Accept
+        </button>
+    </div>
+</body>
+
+</html>
